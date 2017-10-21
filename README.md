@@ -132,7 +132,7 @@ Możemy uruchomić binarkę u siebie tak aby nasłuchiwała na porcie 1337 i prz
 
 ```b@x:~/Desktop/mikhail > socat TCP-LISTEN:1337,reuseaddr,fork EXEC:./story```
 
-W ten sposób uruchamiane są zadania kategori pwn na serwerach które trzeba zpwnować
+W ten sposób można symulować uruchomienie zadania na serwerze CTFa. Program który czyta z stdin i zapisuje do stdout teraz czyta i zapisuje do socketu na danym porcie.
 
 Pozostało nam jeszcze tylko wstawienie shellcodu do `story` (musimy go jeszcze zxorować z bajtami które są w `password`, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu `execve("/bin/sh",0,0)` lub podobnego który podmieni nam aktywny proces na `/bin/sh`. Shellcody możemy znaleźć np. na exploit-db.com, wygenerować metasploitem lub użyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
 
