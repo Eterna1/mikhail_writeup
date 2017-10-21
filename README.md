@@ -5,6 +5,7 @@
 - pwntools
 - gdb
 - pwndbg
+- jakiś disasembler np. IDA Pro, objdump, radare2, Binary Ninja
 
 ## Opis zadania
 
@@ -42,7 +43,7 @@ a później:
     pass_len = read(0, password, 1000);
 ```
 
-Co oznacza że program jest podatny na `buffer overflow` i możemy nadpisać adres powrotu na `A` powodując że program zacznie wykonywać instrukcje z pod adresu `A`. Niestety nic nam to nie daje bo przez `PIE` i `ASLR` nie wiemy gdzie wskoczyć.  
+Co oznacza że program jest podatny na `buffer overflow` i możemy nadpisać adres powrotu na `A` powodując że program zacznie wykonywać instrukcje spod adresu `A`. Niestety nic nam to nie daje bo przez `PIE` i `ASLR` nie wiemy gdzie wskoczyć.  
 
 Analizując dalej widzimy taki kod:
 
@@ -63,7 +64,7 @@ Oznacza to, że jeśli wybierzemy nasze hasło odpowiedniej długości to wskaź
 
 Tylko jak obliczyć długość hasła?  
 
-Po zdisasemblerowaniu binarki (ja użyłam do tego programu `IDA Pro`) można odnaleźć miejsce w którym właśnie jest zapisywny wskaźnik na story:
+Po zdisasemblerowaniu binarki można odnaleźć miejsce w którym właśnie jest zapisywny wskaźnik na `story`:
 
 ```
 .text:0000000000000A6C                 mov     rax, cs:story
@@ -78,7 +79,7 @@ Spróbujmy podpiąć się debuggerem w to miejsce.
 ## Debugowanie
 
 
-Włączmy binarke w gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE. Wtedy adresy które są pokazywane przez disasembler będą pod adresem o `0x555555554000` większym. 
+Włączmy binarke w gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE. Wtedy adresy które są pokazywane przez disasembler w pamięci procesu załadują się pod adresem o `0x555555554000` większym. (`0x555555554000` jest nazywamy adresem bazowym).  
 
 
 ```
@@ -131,7 +132,7 @@ Możemy uruchomić binarkę u siebie tak aby nasłuchiwała na porcie 1337 i prz
 
 ```b@x:~/Desktop/mikhail > socat TCP-LISTEN:1337,reuseaddr,fork EXEC:./story```
 
-W ten sposób uruchamiane są zadania kategori CTF na serwerach które trzeba zpwnować
+W ten sposób uruchamiane są zadania kategori pwn na serwerach które trzeba zpwnować
 
 Pozostało nam jeszcze tylko wstawienie shellcodu do `story` (musimy go jeszcze zxorować z bajtami które są w `password`, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu `execve("/bin/sh",0,0)` lub podobnego który podmieni nam aktywny proces na `/bin/sh`. Shellcody możemy znaleźć np. na exploit-db.com, wygenerować metasploitem lub użyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
 
