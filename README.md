@@ -101,14 +101,14 @@ i na instrukcji `ret` w funkcji `foo`:
 b *0x555555554aab
 ```
 
-Możemy teraz urcuhomić program w gdb i podać puste hasło (1-Bajtowe haslo - sam znak nowej lini)
-![gdb_beginning]
+Możemy teraz urcuhomić program w gdb i podać puste hasło (1-Bajtowe haslo - sam znak nowej lini):
+!(aaa)[imgs/gdb_beginning.png]
 
-![imgs/rax.png]
+!(bbb)[imgs/rax.png]
 
 Widzimy że przy wysłaniu pustego hasła program nadpisuje adres `0x7fffffffd632`.
 
-[imgs/returning_from_foo.png]
+!(ccc)[imgs/returning_from_foo.png]
 
 Tutaj widać że adres powrotu znajduje się pod adresem: `0x7fffffffd678`
 
@@ -122,10 +122,10 @@ Out[1]: 70
 Trzeba wysłać password dłuższe o 70 znaków czyli sumarycznie 71 znaków. 
 Możemy sprawdzić w gdb czy obliczyliśmy wszystko poprawnie (wysyłamy 70 znaków `a` i znak nowej lini:
 
-![imgs/p1.png]
+!(ddd)[imgs/p1.png]
 Na powyższym obrazku widzimy że zapisuje adres na bufor `story` w miejsce które przechowuje adres powrotu.
 
-![imgs/p2.png]
+!(eee)[imgs/p2.png]
 
 Po kontynuowaniu wykonywania programu w gdb widzimy że program wywalił się na próbie wykonywania instrukcji ze sterty, co oznacza że próbował wykonać instukcje z bufora `story`
 
