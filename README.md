@@ -10,7 +10,7 @@
 
 W tym zadaniu dostajemy binarkę która działa po stronie serwera i źródło w C++.  
 
-programem checksec który instaluje się razem z `pwndbg` można sprawdzić z jakimi zabezpieczeniami program został skompilowany.
+Programem checksec który instaluje się razem z `pwndbg` można sprawdzić z jakimi zabezpieczeniami program został skompilowany.
 
 ```
 b@x:~/Desktop/mikhail > checksec story
@@ -57,8 +57,9 @@ Analizując dalej widzimy taki kod:
 ```
 
 który dopisuje do bufora na stosie `password` wiadomość `Yay! We encrypted your story! It's secret now at ` a poźniej jeszcze jest dodawany wskaźnik na bufor `story`. Jest on zapisywany w postaci little-endian.
+Ale tutaj znowu nie ma sprawdzania czy do bufora nie kopiujemy zbyt dużo danych i znowu mamy tutaj podatność buffer overflow.
 
-Oznacza to, że jeśli wybierzemy nasze hasło odpowiedniej długości to wskaźnik na bufor `story` zapisze się w miejscu adresu powrotu z funkcji. Wtedy po wyjściu z funkcji `foo` program zacznie wykonywać instrukcje które sami mu dostarczymy do bufora `story` .
+Oznacza to, że jeśli wybierzemy nasze hasło odpowiedniej długości to wskaźnik na bufor `story` zapisze się w miejscu adresu powrotu z funkcji. Wtedy po wyjściu z funkcji `foo` program zacznie wykonywać kod maszynowy w tablicy znaków `story` .
 
 Tylko jak obliczyć długość hasła?  
 
@@ -76,13 +77,8 @@ Spróbujmy podpiąć się debuggerem w to miejsce.
 
 ## Debugowanie
 
-Dla ułatwienia debugowania wyłączamy chwilowo ASLR'a:
 
-```
-echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
-```
-
-Włączmy binarke w gdb:
+Włączmy binarke w gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE. Wtedy adresy które są pokazywane przez disasembler będą pod adresem o `0x555555554000` większym. 
 
 
 ```
@@ -104,13 +100,13 @@ b *0x555555554aab
 Możemy teraz urcuhomić program w gdb i podać puste hasło (1-Bajtowe haslo - sam znak nowej lini):
 ![a](imgs/gdb_beginning.png)
 
-![b](imgs/rax.png)
+![b](imgs/rax_red.png)
 
-Widzimy że przy wysłaniu pustego hasła program nadpisuje adres `0x7fffffffd632`.
+Powyżej widzimy że przy wysłaniu pustego hasła program nadpisuje adres `0x7fffffffd632`.
 
-![c](imgs/returning_from_foo.png)
+![c](imgs/returning_from_foo_red.png)
 
-Tutaj widać że adres powrotu znajduje się pod adresem: `0x7fffffffd678`
+Powyżej widać że adres powrotu znajduje się pod adresem: `0x7fffffffd678`
 
 Obliczmy róźnicę pomiędzy tymi adresami:
 
@@ -123,7 +119,7 @@ Trzeba wysłać password dłuższe o 70 znaków czyli sumarycznie 71 znaków.
 Możemy sprawdzić w gdb czy obliczyliśmy wszystko poprawnie (wysyłamy 70 znaków `a` i znak nowej lini:
 
 ![p1](imgs/p1.png)
-Na powyższym obrazku widzimy że zapisuje adres na bufor `story` w miejsce które przechowuje adres powrotu.
+Na powyższym obrazku widzimy że adres bufora `story` jest wpisywany tam gdzie jest adres powrotu z funkcji `foo`.
 
 ![p2](imgs/p2.png)
 
@@ -135,9 +131,9 @@ Możemy uruchomić binarkę u siebie tak aby nasłuchiwała na porcie 1337 i prz
 
 ```b@x:~/Desktop/mikhail > socat TCP-LISTEN:1337,reuseaddr,fork EXEC:./story```
 
-W ten sposób uruchamiane są zadania kategori CTF na serwerach które trzeba zpwownować
+W ten sposób uruchamiane są zadania kategori CTF na serwerach które trzeba zpwnować
 
-Pozostało nam jeszcze tylko wstawienie shellcodu do bufora story (musimy go jeszcze zxorować z buforem password, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu `execve("/bin/sh",0,0)` lub podobnego. Shellcody możemy znaleźć np. na exploit-db.com, wygenerować metasploitem, lub uzyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
+Pozostało nam jeszcze tylko wstawienie shellcodu do `story` (musimy go jeszcze zxorować z bajtami które są w `password`, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu `execve("/bin/sh",0,0)` lub podobnego który podmieni nam aktywny proces na `/bin/sh`. Shellcody możemy znaleźć np. na exploit-db.com, wygenerować metasploitem lub użyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
 
 exploit znajduje się poniżej:  
 
@@ -196,5 +192,10 @@ r.send(payload)
 r.interactive()
 ```
 
-Powinno to nam dodatkowo uruchomić dodatkowe okno z gdb. Musimy mieć na uwadze to, że jeśli uruchamiamy proces w gdb to on automatycznie wyłącza ASLRa i PIE. W przeciwnym wypadku breakpoint na `0x555555554aab` nie zadziałałby
- 
+Powinno to nam dodatkowo uruchomić dodatkowe okno z gdb.
+
+## Przydatne polecenia gdb 
+
+- `b` - ustawiamy breakpoint
+- `c` / `continue` - kontynuujemy wykonywanie programu
+- `r` / `run` - uruchamiamy program od początku
