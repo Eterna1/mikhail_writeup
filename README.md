@@ -102,13 +102,13 @@ b *0x555555554aab
 ```
 
 Możemy teraz urcuhomić program w gdb i podać puste hasło (1-Bajtowe haslo - sam znak nowej lini):
-!(aaa)[imgs/gdb_beginning.png]
+!(imgs/gdb_beginning.png)
 
-!(bbb)[imgs/rax.png]
+!(imgs/rax.png)
 
 Widzimy że przy wysłaniu pustego hasła program nadpisuje adres `0x7fffffffd632`.
 
-!(ccc)[imgs/returning_from_foo.png]
+!(imgs/returning_from_foo.png)
 
 Tutaj widać że adres powrotu znajduje się pod adresem: `0x7fffffffd678`
 
@@ -122,10 +122,10 @@ Out[1]: 70
 Trzeba wysłać password dłuższe o 70 znaków czyli sumarycznie 71 znaków. 
 Możemy sprawdzić w gdb czy obliczyliśmy wszystko poprawnie (wysyłamy 70 znaków `a` i znak nowej lini:
 
-!(ddd)[imgs/p1.png]
+!(imgs/p1.png)
 Na powyższym obrazku widzimy że zapisuje adres na bufor `story` w miejsce które przechowuje adres powrotu.
 
-!(eee)[imgs/p2.png]
+!(imgs/p2.png)
 
 Po kontynuowaniu wykonywania programu w gdb widzimy że program wywalił się na próbie wykonywania instrukcji ze sterty, co oznacza że próbował wykonać instukcje z bufora `story`
 
@@ -137,7 +137,7 @@ Możemy uruchomić binarkę u siebie tak aby nasłuchiwała na porcie 1337 i prz
 
 W ten sposób uruchamiane są zadania kategori CTF na serwerach które trzeba zpwownować
 
-Pozostało nam jeszcze tylko wstawienie shellcodu do bufora story (musimy go jeszcze zxorować z buforem password, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu execve("/bin/sh",0,0) lub coś podobnego. Shellcody możemy znaleźć np. na [exploit-db.com](exploit-db.com), wygenerować metasploitem, lub uzyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
+Pozostało nam jeszcze tylko wstawienie shellcodu do bufora story (musimy go jeszcze zxorować z buforem password, bo później w aplikacji jest xorowanie jeszcze raz). Poszukujemy shellcodu `execve("/bin/sh",0,0)` lub podobnego. Shellcody możemy znaleźć np. na exploit-db.com, wygenerować metasploitem, lub uzyć [shellcraft z pwntools](http://docs.pwntools.com/en/stable/shellcraft.html)
 
 exploit znajduje się poniżej:  
 
